@@ -1,5 +1,6 @@
 #include "monty.h"
 #define BUFFSIZE 2048
+#define _GNU_SOURCE
 
 /**
  * main - Principal fu
