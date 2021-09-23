@@ -1,6 +1,5 @@
 #include "monty.h"
 #define BUFFSIZE 2048
-#define _GNU_SOURCE
 
 /**
  * main - Principal fu
@@ -22,7 +21,7 @@ int main(int ac, char **av)
         fprintf(stderr, "Error: Can't open file %s\n", av[1]), freeAll();
         return (EXIT_FAILURE);
     }
-    while (getline(&vars_t.buff, &vars_t.sizz, vars_t.file) != EOF)
+    while (fgets(&vars_t.buff, &vars_t.sizz, vars_t.file) != EOF)
     {
         if (vars_t.buff[0] == '\n')
         {
