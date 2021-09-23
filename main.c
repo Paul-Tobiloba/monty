@@ -10,6 +10,7 @@
 int main(int ac, char **av)
 {
     char *opcode;
+    int get;
     void (*funct)(stack_t **, unsigned int) = NULL;
 
     vars_t.line_number = 1;
@@ -21,7 +22,7 @@ int main(int ac, char **av)
         fprintf(stderr, "Error: Can't open file %s\n", av[1]), freeAll();
         return (EXIT_FAILURE);
     }
-    while (getline(&vars_t.buff, &vars_t.sizz, vars_t.file) != EOF)
+    while (get = getline(&vars_t.buff, &vars_t.sizz, vars_t.file) != EOF)
     {
         if (vars_t.buff[0] == '\n')
         {
