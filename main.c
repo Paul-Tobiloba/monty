@@ -1,53 +1,74 @@
 #include "monty.h"
-#define BUFFSIZE 2048
+#include "lists.h"
+
+data_t data = DATA_INIT;
 
 /**
- * main - Principal fu
- * @ac: cant input
- * @av: array
- * Return: sucess if it is
+ * monty - helper function for main function
+ * @args: pointer to struct of arguments from main
+ *
+ * Description: opens and reads from the file
+ * containing the opcodes, and calls the function
+ * that will find the corresponding executing function
  */
-int main(int ac, char **av)
+void monty(args_t *args)
 {
-    char *opcode;
-    int get;
-    void (*funct)(stack_t **, unsigned int) = NULL;
+    size_t len = 0;
+    int get = 0;
+    void (*code_func)(stack_t **, unsigned int);
 
-    vars_t.line_number = 1;
-    if (ac != 2)
-        return (fprintf(stderr, "USAGE: monty file\n"), freeAll(), EXIT_FAILURE);
-    vars_t.file = fopen(av[1], "r");
-    while (!vars_t.file)
+    if (args->ac != 2)
     {
-        fprintf(stderr, "Error: Can't open file %s\n", av[1]), freeAll();
-        return (EXIT_FAILURE);
+        dprintf(STDERR_FILENO, USAGE);
+        exit(EXIT_FAILURE);
     }
-    while (get = getline(&vars_t.buff, &vars_t.sizz, vars_t.file) != EOF)
+    data.fptr = fopen(args->av, "r");
+    if (!data.fptr)
     {
-        if (vars_t.buff[0] == '\n')
+        dprintf(STDERR_FILENO, FILE_ERROR, args->av);
+        exit(EXIT_FAILURE);
+    }
+    while (1)
+    {
+        args->line_number++;
+        get = getline(&(data.line), &len, data.fptr);
+        if (get < 0)
+            break;
+        data.words = strtow(data.line);
+        if (data.words[0] == NULL || data.words[0][0] == '#')
         {
-            vars_t.line_number++;
+            free_all(0);
             continue;
         }
-        opcode = strtok(vars_t.buff, " \n\t\r");
-        if (opcode == NULL || opcode[0] == '#')
+        code_func = get_func(data.words);
+        if (!code_func)
         {
-            vars_t.line_number++;
-            continue;
+            dprintf(STDERR_FILENO, UNKNOWN, args->line_number, data.words[0]);
+            free_all(1);
+            exit(EXIT_FAILURE);
         }
-        if (opcode)
-        {
-            funct = get_opp(opcode);
-            if (funct != NULL)
-                funct(&vars_t.h, vars_t.line_number);
-            else
-            {
-                return (fprintf(stderr, "L%u: unknown instruction %s\n",
-                                vars_t.line_number, opcode),
-                        freeAll(), EXIT_FAILURE);
-            }
-        }
-        vars_t.line_number++;
+        code_func(&(data.stack), args->line_number);
+        free_all(0);
     }
-    return (freeAll(), EXIT_SUCCESS);
+    free_all(1);
+}
+
+/**
+ * main - entry point for monty bytecode interpreter
+ * @argc: number of arguments
+ * @argv: array of arguments
+ *
+ * Return: EXIT_SUCCESS or EXIT_FAILURE
+ */
+int main(int argc, char *argv[])
+{
+    args_t args;
+
+    args.av = argv[1];
+    args.ac = argc;
+    args.line_number = 0;
+
+    monty(&args);
+
+    return (EXIT_SUCCESS);
 }
