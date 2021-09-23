@@ -21,7 +21,7 @@ int main(int ac, char **av)
         fprintf(stderr, "Error: Can't open file %s\n", av[1]), freeAll();
         return (EXIT_FAILURE);
     }
-    while (get = getline(&vars_t.buff, &vars_t.sizz, vars_t.file) != EOF)
+    while (getline(&vars_t.buff, &vars_t.sizz, vars_t.file) != EOF)
     {
         if (vars_t.buff[0] == '\n')
         {
